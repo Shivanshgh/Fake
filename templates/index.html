@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080a12">
+  <title>ATM HFC</title>
+  <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+  <div class="atm-shell">
+    <header class="topbar"><div class="brand"><span class="brand-lock" aria-hidden="true">▣</span><div><strong>ATM HFC</strong><small>SECURE SELF SERVICE</small></div></div><div class="top-meta"><span class="secure-pill"><i></i> SECURE SESSION</span><span id="countdown" class="countdown">30s</span></div></header>
+    <div class="progress-wrap"><div class="progress-label"><span id="step-label">WELCOME</span><span id="step-count">01 / 05</span></div><div class="progress-track"><div id="progress" class="progress-fill"></div></div></div>
+    <main id="screen" class="screen" aria-live="polite"></main>
+    <div class="hardware"><div class="card-slot"><span class="slot-light"></span><span>CARD SLOT</span><div class="slot-line"></div></div><div class="cash-slot"><span>CASH DISPENSER</span><div class="cash-mouth"><div class="cash-note"></div></div></div></div>
+    <footer class="status-strip" aria-label="System security status"><div class="status-items" id="status-items"><span class="status-item"><i class="dot"></i> Checking system…</span></div><span id="version" class="version">v—</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/static/app.js?v=2" defer></script>
+</body>
+</html>
