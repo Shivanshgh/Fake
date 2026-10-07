@@ -7,9 +7,9 @@ from flask import Flask, jsonify, render_template_string, request
 app = Flask(__name__)
 LOCK = threading.RLock()
 SEED = [
-    {"card": "4111111111111234", "pin": "1234", "name": "Alex Morgan", "balance": 12500},
-    {"card": "5555555555555678", "pin": "2468", "name": "Jordan Lee", "balance": 300},
-    {"card": "4000000000009012", "pin": "4321", "name": "Casey Patel", "balance": 48200},
+    {"card_id": "demo-alex", "card": "4111111111111234", "pin": "1234", "name": "Alex Morgan", "balance": 12500},
+    {"card_id": "demo-jordan", "card": "5555555555555678", "pin": "2468", "name": "Jordan Lee", "balance": 300},
+    {"card_id": "demo-casey", "card": "4000000000009012", "pin": "4321", "name": "Casey Patel", "balance": 48200},
 ]
 customers = {}
 ledger = []
@@ -56,19 +56,16 @@ def reset():
 @app.get("/api/cards")
 def cards():
     with LOCK:
-        return jsonify([{"card_id": f"demo-{index + 1}", "name": item["name"], "last4": card[-4:]}
-                        for index, (card, item) in enumerate(customers.items())])
+        card, item = next(iter(customers.items()))
+        return jsonify([{"card_id": item["card_id"], "name": item["name"], "last4": card[-4:]}])
 
 
 @app.post("/api/lookup")
 def lookup():
     card_id = str((request.get_json(silent=True) or {}).get("card_id", ""))
     with LOCK:
-        try:
-            index = int(card_id.removeprefix("demo-")) - 1
-            card = list(customers.keys())[index]
-        except (ValueError, IndexError):
-            card = ""
+        card = next((number for number, customer in customers.items()
+                     if customer["card_id"] == card_id), "")
         item = customers.get(card)
         return jsonify({"found": bool(item), "card": card if item else None})
 
@@ -128,6 +125,30 @@ def withdraw():
               "balance": item["balance"], "type": "Cash withdrawal"}
         ledger.append(tx)
         item["last_transaction"] = f"Withdrawal {amount} · {when}"
+        return jsonify({"ok": True, "transaction": {k: v for k, v in tx.items() if k not in ("card", "name")}})
+
+
+@app.post("/api/deposit")
+def deposit():
+    data = request.get_json(silent=True) or {}
+    card = str(data.get("card", ""))
+    try:
+        amount = int(data.get("amount", 0))
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "invalid_amount"}), 400
+    with LOCK:
+        item = customers.get(card)
+        if not item:
+            return jsonify({"ok": False, "error": "card_unavailable"}), 404
+        if amount <= 0 or amount % 100:
+            return jsonify({"ok": False, "error": "invalid_amount"}), 400
+        item["balance"] += amount
+        when = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+        tx = {"id": "TX-" + secrets.token_hex(4).upper(), "card": card, "masked_card": masked(card),
+              "name": item["name"], "amount": amount, "time": when,
+              "balance": item["balance"], "type": "Cash deposit"}
+        ledger.append(tx)
+        item["last_transaction"] = f"Deposit {amount} · {when}"
         return jsonify({"ok": True, "transaction": {k: v for k, v in tx.items() if k not in ("card", "name")}})
 
 

@@ -1,0 +1,21 @@
+{
+  "name": "bank-app",
+  "version": "1.0.0",
+  "description": "Bank App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.bankapp.kiosk",
+    "productName": "Bank App",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

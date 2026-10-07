@@ -250,6 +250,29 @@ def withdraw():
     return jsonify(result)
 
 
+@app.post("/api/deposit")
+def deposit():
+    card, error = require_pin()
+    if error:
+        return error
+    amount = (request.get_json(silent=True) or {}).get("amount")
+    try:
+        amount = int(amount)
+    except (TypeError, ValueError):
+        amount = 0
+    if amount <= 0 or amount % 100:
+        _audit(amount, False)
+        return jsonify({"error": "invalid_amount"}), 400
+    try:
+        result = _bank("POST", "/api/deposit", json={"card": card, "amount": amount})
+    except requests.RequestException:
+        return jsonify({"error": "service_unavailable"}), 503
+    _audit(amount, result.get("ok", False))
+    if not result.get("ok"):
+        return jsonify({"error": result.get("error", "deposit_failed")}), 400
+    return jsonify(result)
+
+
 @app.post("/api/change-pin")
 def change_pin():
     card, error = require_pin()
@@ -271,4 +294,4 @@ def change_pin():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, threaded=True)
+    app.run(host="0.0.0.0", port=5000)

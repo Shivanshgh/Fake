@@ -45,3 +45,20 @@ Set `BAD_UPDATE=1` when launching `app.py` to intentionally fail startup for rol
 - Mock bank: dashboard at `GET /`, API under `/api/`
 
 The status strip reads Linux mount and swap information and checks `usbguard list-devices` when available. Non-Linux hosts report clearly labelled demo values.
+
+## Desktop app
+
+The Electron desktop shell can be launched with Node.js installed:
+
+```bash
+npm install
+npm start
+```
+
+To create a Windows installer:
+
+```bash
+npm run build
+```
+
+Build output is written to `dist/` and is intentionally excluded from Git. Attach release installers to a GitHub Release if you want to distribute them.
